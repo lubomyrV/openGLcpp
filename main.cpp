@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include <cmath>
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -21,9 +21,10 @@ const char *vertexShaderSource = "#version 330 core\n"
 
 const char *fragmentShader1Source = "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 vertexColor;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = vertexColor;\n"
     "}\n\0";
 const char *fragmentShader2Source = "#version 330 core\n"
     "out vec4 FragColor;\n"
@@ -175,14 +176,14 @@ int main()
         -0.5f,  0.5f, 0.0f   // top left
     };
     float firstTriangle[] = {
-        0.7f, 0.5f, 0.0f,
-        0.7f, -0.5f, 0.0f,
+        0.6f, 0.5f, 0.0f,
+        0.6f, -0.5f, 0.0f,
         0.9f, -0.5f, 0.0f,
     };
     float secondTriangle[] = {
         -0.9f, 0.5f, 0.0f,
-        -0.7f, -0.5f, 0.0f,
-        -0.7f, 0.5f, 0.0f,
+        -0.6f, -0.5f, 0.0f,
+        -0.6f, 0.5f, 0.0f,
     };
 
     unsigned int indices[] = {  // note that we start from 0!
@@ -238,7 +239,11 @@ int main()
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    int nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+
     // render loop
+        int vertexColorLocation = glGetUniformLocation(shaderProgramOrange, "vertexColor");
     // -----------
     while (!glfwWindowShouldClose(window))
     {
@@ -253,6 +258,13 @@ int main()
 
         // draw our first triangle
         glUseProgram(shaderProgramOrange);
+        // update the uniform color
+        float timeValue = glfwGetTime();
+        float dynamicValue = (sin(timeValue) / 2.0f) + 0.5f;
+        float dynamicValue2 = (sin(timeValue) / 2.0f) + 0.5f;
+        std::cout << "dynamicValue: "<< dynamicValue << '\n';
+        glUniform4f(vertexColorLocation, dynamicValue, 0.0f, dynamicValue2, 1.0f);
+
         glBindVertexArray(VAOs[0]); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
