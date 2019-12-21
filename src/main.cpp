@@ -1,9 +1,10 @@
-
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <iostream>
+
+#include "../include/Shader.h"
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -12,40 +13,12 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec3 aColor;"
-    "out vec3 ourColor;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "   ourColor = aColor;\n"
-    "}\0";
-
-const char *fragmentShader1Source = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "in vec3 ourColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(ourColor, 1.0f);\n"
-    "}\n\0";
-const char *fragmentShader2Source = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "uniform vec4 vertexColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vertexColor;\n"
-    "}\n\0";
-const char *fragmentShader3Source = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(0.1f, 1.0f, 0.1f, 1.0f);\n"
-    "}\n\0";
-
 
 int main()
 {
+
+
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -77,99 +50,11 @@ int main()
         return -1;
     }
 
-
-    // build and compile our shader program
+    // build and compile our shader programs
     // ------------------------------------
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-
-    // fragment shader 1
-    int fragmentShaderInterpolation = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShaderInterpolation, 1, &fragmentShader1Source, NULL);
-    glCompileShader(fragmentShaderInterpolation);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShaderInterpolation, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShaderInterpolation, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    int shaderProgramInterpolation = glCreateProgram();
-    glAttachShader(shaderProgramInterpolation, vertexShader);
-    glAttachShader(shaderProgramInterpolation, fragmentShaderInterpolation);
-    glLinkProgram(shaderProgramInterpolation);
-    // check for linking errors
-    glGetProgramiv(shaderProgramInterpolation, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgramInterpolation, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader 2
-    int fragmentShaderDynamic = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShaderDynamic, 1, &fragmentShader2Source, NULL);
-    glCompileShader(fragmentShaderDynamic);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShaderDynamic, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShaderDynamic, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    int shaderProgramDynamic = glCreateProgram();
-    glAttachShader(shaderProgramDynamic, vertexShader);
-    glAttachShader(shaderProgramDynamic, fragmentShaderDynamic);
-    glLinkProgram(shaderProgramDynamic);
-    // check for linking errors
-    glGetProgramiv(shaderProgramDynamic, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgramDynamic, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader 3
-    int fragmentShaderGreen = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShaderGreen, 1, &fragmentShader3Source, NULL);
-    glCompileShader(fragmentShaderGreen);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShaderGreen, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShaderGreen, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    int shaderProgramGreen = glCreateProgram();
-    glAttachShader(shaderProgramGreen, vertexShader);
-    glAttachShader(shaderProgramGreen, fragmentShaderGreen);
-    glLinkProgram(shaderProgramGreen);
-    // check for linking errors
-    glGetProgramiv(shaderProgramGreen, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgramGreen, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShaderInterpolation);
-    glDeleteShader(fragmentShaderDynamic);
-    glDeleteShader(fragmentShaderGreen);
+    Shader shaderInterpolation("/home/koris/cpp/gl1/shaders/vshader.vert", "/home/koris/cpp/gl1/shaders/fshader1.frag");
+    Shader shaderDynamic("/home/koris/cpp/gl1/shaders/vshader.vert", "/home/koris/cpp/gl1/shaders/fshader2.frag");
+    Shader shaderGreen("/home/koris/cpp/gl1/shaders/vshader.vert", "/home/koris/cpp/gl1/shaders/fshader3.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -217,7 +102,6 @@ int main()
     glEnableVertexAttribArray(1);
 
 
-
     // first triangle setup
     // --------------------
     glBindVertexArray(VAOs[1]);
@@ -253,7 +137,6 @@ int main()
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
 
     // render loop
-        int vertexColorLocation = glGetUniformLocation(shaderProgramDynamic, "vertexColor");
     // -----------
     while (!glfwWindowShouldClose(window))
     {
@@ -266,22 +149,26 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // draw rectangle
-        glUseProgram(shaderProgramInterpolation);
+        // render the rectangle
+        shaderInterpolation.use();
 
         glBindVertexArray(VAOs[0]); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        glUseProgram(shaderProgramDynamic);
+        // render the dynamic triangle
+        shaderDynamic.use();
+
         // update the uniform color
         float timeValue = glfwGetTime();
         float dynamicValue = (sin(timeValue) / 2.0f) + 0.5f;
-        std::cout << "dynamicValue: "<< dynamicValue << '\n';
-        glUniform4f(vertexColorLocation, dynamicValue, 0.0f, 0.0f, 1.0f);
+        //std::cout << "dynamicValue: "<< dynamicValue << '\n';
+        shaderDynamic.setVec4("vertexColor", dynamicValue, 0.0f, 0.0f, 1.0f);
+
         glBindVertexArray(VAOs[1]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        glUseProgram(shaderProgramGreen);
+        // render the green triangle
+        shaderGreen.use();
         glBindVertexArray(VAOs[2]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 

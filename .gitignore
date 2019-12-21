@@ -1,0 +1,10 @@
+# ide files
+*.depend
+*.layout
+*.cbp
+
+# objects files
+obj/
+
+# executable files
+bin/
