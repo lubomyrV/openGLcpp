@@ -9,12 +9,13 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void processInputShader(GLFWwindow *window, Shader shader);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+// stores how much we're seeing of either texture
+float mixValue = 0.2f;
 
 int main()
 {
@@ -69,7 +70,7 @@ int main()
         -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
         -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
     };
-
+    /*
     float firstTriangle[] = {
         0.6f, 0.5f, 0.0f,
         0.6f, -0.5f, 0.0f,
@@ -81,7 +82,7 @@ int main()
         -0.6f, -0.5f, 0.0f,
         -0.6f, 0.5f, 0.0f,
     };
-
+    */
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
@@ -116,17 +117,24 @@ int main()
 
     // load and create a texture
     // -------------------------
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    unsigned int texture1, texture2;
+    // texture 1
+    // ---------
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
     // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+
+    // set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     // set texture filtering parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     unsigned char *data = stbi_load("/home/koris/cpp/gl1/resources/textures/container.jpg", &width, &height, &nrChannels, 0);
     if (data)
@@ -139,7 +147,34 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+    // texture 2
+    // ---------
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load("/home/koris/cpp/gl1/resources/textures/awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
 
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    // -------------------------------------------------------------------------------------------
+    shaderInterpolation.use(); // don't forget to activate/use the shader before setting uniforms!
+    shaderInterpolation.setInt("texture2", 1);
 
 
 
@@ -198,10 +233,19 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+
+        // bind Texture
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // set the texture mix value in the shader
+        shaderInterpolation.setFloat("mixValue", mixValue);
+
         // render the rectangle
         shaderInterpolation.use();
-        // bind Texture
-        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -259,22 +303,22 @@ void processInput(GLFWwindow *window)
 
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
         glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-}
 
-void processInputShader(GLFWwindow *window, Shader shader)
-{
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        shader.setFloat("yOffset", -0.05f);
+        // change this value accordingly (might be too slow or too fast based on system hardware)
+        mixValue += 0.01f;
+        if(mixValue >= 1.0f)
+            mixValue = 1.0f;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        shader.setFloat("yOffset", 0.05f);
+        // change this value accordingly (might be too slow or too fast based on system hardware)
+        mixValue -= 0.01f;
+        if (mixValue <= 0.0f)
+            mixValue = 0.0f;
     }
-
-
-
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
