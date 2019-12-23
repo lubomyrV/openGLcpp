@@ -3,6 +3,13 @@
 #include <cmath>
 #include <iostream>
 
+#include <stdio.h>
+#include <unistd.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "../include/Shader.h"
 #include "../include/stb_image.h"
 
@@ -19,7 +26,7 @@ float mixValue = 0.2f;
 
 int main()
 {
-
+    std::string currentDir = get_current_dir_name();
 
 
     // glfw: initialize and configure
@@ -28,11 +35,6 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    // uncomment this statement to fix compilation on OS X
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
 
     // glfw window creation
     // --------------------
@@ -51,14 +53,14 @@ int main()
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
+        glfwTerminate();
         return -1;
     }
 
     // build and compile our shader programs
     // ------------------------------------
-    Shader shaderInterpolation("/home/koris/cpp/gl1/shaders/vshader.vert", "/home/koris/cpp/gl1/shaders/fshader1.frag");
-    Shader shaderDynamic("/home/koris/cpp/gl1/shaders/vshader.vert", "/home/koris/cpp/gl1/shaders/fshader2.frag");
-    Shader shaderGreen("/home/koris/cpp/gl1/shaders/vshader.vert", "/home/koris/cpp/gl1/shaders/fshader3.frag");
+
+    Shader shaderInterpolation( ((currentDir+"/shaders/vshader.vert").c_str()) , ((currentDir+"/shaders/fshader1.frag").c_str()) );
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -70,19 +72,7 @@ int main()
         -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
         -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
     };
-    /*
-    float firstTriangle[] = {
-        0.6f, 0.5f, 0.0f,
-        0.6f, -0.5f, 0.0f,
-        0.9f, -0.5f, 0.0f,
-    };
 
-    float secondTriangle[] = {
-        -0.9f, 0.5f, 0.0f,
-        -0.6f, -0.5f, 0.0f,
-        -0.6f, 0.5f, 0.0f,
-    };
-    */
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
@@ -118,6 +108,7 @@ int main()
     // load and create a texture
     // -------------------------
     unsigned int texture1, texture2;
+
     // texture 1
     // ---------
     glGenTextures(1, &texture1);
@@ -136,7 +127,7 @@ int main()
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load("/home/koris/cpp/gl1/resources/textures/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load( ((currentDir+"/resources/textures/container.jpg").c_str()) , &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -147,6 +138,7 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+
     // texture 2
     // ---------
     glGenTextures(1, &texture2);
@@ -158,7 +150,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
-    data = stbi_load("/home/koris/cpp/gl1/resources/textures/awesomeface.png", &width, &height, &nrChannels, 0);
+    data = stbi_load( ((currentDir+"/resources/textures/awesomeface.png").c_str()) , &width, &height, &nrChannels, 0);
     if (data)
     {
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
@@ -173,49 +165,10 @@ int main()
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
-    shaderInterpolation.use(); // don't forget to activate/use the shader before setting uniforms!
+    shaderInterpolation.use();
+    // don't forget to activate/use the shader before setting uniforms!
+    shaderInterpolation.setInt("texture1", 0);
     shaderInterpolation.setInt("texture2", 1);
-
-
-
-    /*
-    // first triangle setup
-    // --------------------
-    glBindVertexArray(VAOs[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(firstTriangle), firstTriangle, GL_STATIC_DRAW);
-    // Vertex attributes stay the same
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-
-    // second triangle setup
-    // --------------------
-    glBindVertexArray(VAOs[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriangle), secondTriangle, GL_STATIC_DRAW);
-    // Vertex attributes stay the same
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO
-    // as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // remember: do NOT unbind the EBO while a VAO is active as
-    // the bound element buffer object IS stored in the VAO; keep the EBO bound.
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally
-    // modify this VAO, but this rarely happens.
-    // Modifying other VAOs requires a call to glBindVertexArray anyways so
-    // we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0);
-
-
-    // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    */
 
     int nrAttributes;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
@@ -238,6 +191,7 @@ int main()
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
+
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
@@ -249,25 +203,6 @@ int main()
         glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        /*
-        // render the dynamic triangle
-        shaderDynamic.use();
-        processInputShader(window,shaderDynamic);
-
-        // update the uniform color
-        float timeValue = glfwGetTime();
-        float dynamicValue = (sin(timeValue) / 2.0f) + 0.5f;
-        //std::cout << "dynamicValue: "<< dynamicValue << '\n';
-        shaderDynamic.setVec4("vertexColor", dynamicValue, 0.0f, 0.0f, 1.0f);
-        glBindVertexArray(VAOs[1]);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        // render the green triangle
-        shaderGreen.use();
-        shaderGreen.setFloat("yOffset", dynamicValue);
-        glBindVertexArray(VAOs[2]);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        */
         // glBindVertexArray(0); // no need to unbind it every time
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -281,6 +216,8 @@ int main()
     glDeleteVertexArrays(2, VAOs);
     glDeleteBuffers(2, VBOs);
     glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &texture1);
+    glDeleteBuffers(1, &texture2);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
@@ -329,4 +266,3 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
-
