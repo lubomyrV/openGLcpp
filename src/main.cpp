@@ -1,8 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <cmath>
 #include <iostream>
-
 #include <stdio.h>
 #include <unistd.h>
 
@@ -20,15 +20,13 @@ void processInput(GLFWwindow *window);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+const std::string CURRENT_DIR{get_current_dir_name()};
 
 // stores how much we're seeing of either texture
 float mixValue = 0.2f;
 
 int main()
 {
-    std::string currentDir = get_current_dir_name();
-
-
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -60,7 +58,7 @@ int main()
     // build and compile our shader programs
     // ------------------------------------
 
-    Shader shaderInterpolation( ((currentDir+"/shaders/vshader.vert").c_str()) , ((currentDir+"/shaders/fshader1.frag").c_str()) );
+    Shader shaderInterpolation( ((CURRENT_DIR+"/shaders/vshader.vert").c_str()) , ((CURRENT_DIR+"/shaders/fshader1.frag").c_str()) );
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -127,7 +125,7 @@ int main()
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load( ((currentDir+"/resources/textures/container.jpg").c_str()) , &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load( ((CURRENT_DIR+"/resources/textures/container.jpg").c_str()) , &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -150,7 +148,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
-    data = stbi_load( ((currentDir+"/resources/textures/awesomeface.png").c_str()) , &width, &height, &nrChannels, 0);
+    data = stbi_load( ((CURRENT_DIR+"/resources/textures/awesomeface.png").c_str()) , &width, &height, &nrChannels, 0);
     if (data)
     {
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
@@ -170,13 +168,11 @@ int main()
     shaderInterpolation.setInt("texture1", 0);
     shaderInterpolation.setInt("texture2", 1);
 
-    int nrAttributes;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+
         // input
         // -----
         processInput(window);
@@ -186,8 +182,6 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-
-        // bind Texture
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
@@ -195,15 +189,43 @@ int main()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+
+
+
+
+
+        //transformations
+        glm::mat4 trans = glm::mat4(1.0f);
+
+        // first container
+        // ---------------
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
         // set the texture mix value in the shader
         shaderInterpolation.setFloat("mixValue", mixValue);
-
-        // render the rectangle
-        shaderInterpolation.use();
+        // get their uniform location and set matrix (using glm::value_ptr)
+        unsigned int transformLoc = glGetUniformLocation(shaderInterpolation.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        // with the uniform matrix set, draw the first container
         glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // glBindVertexArray(0); // no need to unbind it every time
+
+
+        // second transformation
+        // ---------------------
+        trans = glm::mat4(1.0f); // reset it to identity matrix
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+        float scaleAmount = sin(glfwGetTime());
+        trans = glm::scale(trans, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+        // this time take the matrix value array's first element as its memory pointer value
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &trans[0][0]);
+
+        // now with the uniform matrix being replaced with new transformations, draw it again.
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
