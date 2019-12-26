@@ -31,6 +31,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     catch (std::ifstream::failure &e)
     {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        //std::cerr << "Error: " << e.what() << '\n';
     }
     const char* vShaderCode = vertexCode.c_str();
     const char * fShaderCode = fragmentCode.c_str();
@@ -57,7 +58,6 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     glDeleteShader(fragment);
     //std::cout << "vertex: " << vertexPath << " - ok\n";
     //std::cout << "fragment: " << fragmentPath << " - ok\n";
-    //std::cout << '\n';
 }
 // activate the shader
 // ------------------------------------------------------------------------
