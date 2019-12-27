@@ -10,7 +10,6 @@ glm::mat4 Camera::GetViewMatrix()
 // Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
-    bool isGroundLevel = false;
     //std::cout << "direction: " << direction << '\n';
     float velocity = MovementSpeed * deltaTime;
     if (direction == FORWARD)
@@ -27,10 +26,11 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
     if (direction == DOWN)
         Position -= Up * velocity;
     // make sure the user stays at the ground level
-    if(isGroundLevel)
+    if(this->isGroundLevel)
     {
         Position.y = 0.0f; // (xz plane)
     }
+    std::cout << "x: " << Position.x << ", y: " << Position.y << ", z: " << Position.z << '\n';
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
