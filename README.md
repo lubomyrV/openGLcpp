@@ -8,10 +8,10 @@ Instructions for building
 
 ### Prerequisites
 
-gnu/linux machine, c++11 compiler, x11, and following libs:
+gnu/linux machine, c++ compiler, x11 and following lib's and packages:
 
 ```
-libxi-dev, x11proto-input-dev, libxinerama1, libglew-dev, libglm-dev, libsdl2-dev, libglfw3
+gcc-8, cmake, libxi-dev, x11proto-input-dev, libxinerama1, libglew-dev, libglm-dev, libsdl2-dev, libglfw3
 ```
 
 ### Creating workspace
