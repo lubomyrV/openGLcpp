@@ -1,19 +1,23 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
+//standard libs
 #include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
 
+//GLFW and glad libs
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+//OpenGL Mathematics lib
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../include/Shader.h"
-#include "../include/Camera.h"
+//lib for loading images
 #include "../include/stb_image.h"
 
+#include "../include/shader.h"
+#include "../include/camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -183,8 +187,15 @@ int main()
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
-        float shift = (sin(glfwGetTime()) / 2.0f) + 0.5f;
-        //std::cout << "shift: " << shift << '\n';
+        if(!moveLight)
+        {
+            // change the light's position values over time
+            // do it at least before using the light source positions
+            lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+            lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+
+        }
+
         // be sure to activate shader when setting uniforms/drawing objects
         objectShader.use();
         objectShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
@@ -214,12 +225,6 @@ int main()
         lampShader.setMat4("projection", lprojection);
         lampShader.setMat4("view", lview);
         lmodel = glm::mat4(1.0f);
-
-        if(!moveLight)
-        {
-            lightPos.z = shift;
-            lightPos.y = shift;
-        }
 
 
         lmodel = glm::translate(lmodel, lightPos);

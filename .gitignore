@@ -1,10 +1,23 @@
+
 # ide files
 *.depend
 *.layout
 *.cbp
+*.codelite
+*.kdev4
+*.project
+*.workspace
+
+#cmake files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
 
 # objects files
 obj/
 
-# executable files
+# executable and builds
 bin/
+build/
+learnOpenGL

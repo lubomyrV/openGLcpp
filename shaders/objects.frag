@@ -1,6 +1,15 @@
 
-
 #version 330 core
+
+struct Material {
+    vec3 ambient;// object's color(objects are almost never completely dark)
+    vec3 diffuse;// simulates the directional impact a light object has on an object.
+    vec3 specular;// simulates the bright spot of a light that appears on shiny objects
+    float shininess;// reflects the light instead of scattering
+};
+
+uniform Material material;
+
 out vec4 FragColor;
 
 in vec3 Normal;

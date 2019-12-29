@@ -7,7 +7,7 @@
     APIs: gl=4.6, gles2=3.2, glsc2=2.0, gles1=1.0
     Profile: core
     Extensions:
-        
+
     Loader: True
     Local files: False
     Omit khrplatform: False
