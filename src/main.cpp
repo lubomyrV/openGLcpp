@@ -24,7 +24,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 
-
 // stores how much we're seeing of either texture
 float mixValue = 0.1f;
 // settings
@@ -198,8 +197,22 @@ int main()
 
         // be sure to activate shader when setting uniforms/drawing objects
         objectShader.use();
-        objectShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        objectShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+        //objectShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        //objectShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+		
+		// light properties for object
+		objectShader.setVec3("light.ambient",  0.2f, 0.2f, 0.2f);
+		objectShader.setVec3("light.diffuse",  0.5f, 0.5f, 0.5f); // darken the light a bit to fit the scene
+		objectShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); 
+
+		
+		// material properties
+		objectShader.setVec3("material.ambient",  1.0f, 0.5f, 0.31f);
+		objectShader.setVec3("material.diffuse",  1.0f, 0.5f, 0.31f);
+		objectShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		objectShader.setFloat("material.shininess", 8.0f);
+
+
 
         // view/projection transformations
         glm::mat4 lprojection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -220,8 +233,10 @@ int main()
 
         // also draw the lamp object
         lampShader.use();
+		
+		// light properties for lamp 
         lampShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
-
+		
         lampShader.setMat4("projection", lprojection);
         lampShader.setMat4("view", lview);
         lmodel = glm::mat4(1.0f);
