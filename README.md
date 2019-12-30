@@ -4,7 +4,6 @@ Small project for learning openGL and C++ stuff
 
 ## Getting Started
 
-Instructions for building 
 
 ### Prerequisites
 
