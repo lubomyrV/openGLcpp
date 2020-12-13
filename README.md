@@ -18,7 +18,7 @@ gcc-8, cmake, libxi-dev, x11proto-input-dev, libxinerama1, libglew-dev, libglm-d
 In order to create a workspace for IDE (for example 'codelite') run:
 
 ```
-build.sh
+./build.sh
 ```
 
 ### Building
