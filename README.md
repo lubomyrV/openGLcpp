@@ -10,7 +10,7 @@ Small project for learning openGL and C++ stuff
 gnu/linux machine, c++ compiler, x11 and following lib's and packages:
 
 ```
-gcc-8, cmake, libxi-dev, x11proto-input-dev, libxinerama1, libglew-dev, libglm-dev, libsdl2-dev, libglfw3
+gcc-8, cmake, libxi-dev, x11proto-input-dev, libxinerama1, libglew-dev, libglm-dev, libsdl2-dev, libglfw3, libglfw3-dev
 ```
 
 ### Creating workspace
